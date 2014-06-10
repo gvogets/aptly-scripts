@@ -1,0 +1,27 @@
+#!/bin/bash
+# Publish a distribution with all components in a single snapshot (aptly >= 0.6).
+
+set -ex
+
+DIST=$1
+DOTW=$2
+if [ -z "$DIST" ]; then
+	echo "Usage: $0 <distribution> [<day-of-the-week-name|tag>]"
+	exit 1
+fi
+
+if [ -z "$DOTW" ]; then
+	DOTW=$(date +%A | tr '[:upper:]' '[:lower:]')
+fi
+
+aptly mirror list --raw | grep "$DIST#" |\
+	xargs -n1 -IX aptly snapshot drop $DOTW+X || true
+aptly mirror list --raw | grep "$DIST#" |\
+	xargs -n1 -IX aptly snapshot create $DOTW+X from mirror X
+
+SNAPSHOTS=$(aptly snapshot list --raw | grep "$DOTW+$DIST#" | xargs)
+COMPONENTS_=$(aptly mirror list --raw | grep "$DIST#" | cut -d'#' -f2 | xargs)
+COMPONENTS=${COMPONENTS_// /,}
+
+aptly publish switch -component="$COMPONENTS" $DIST $DIST $SNAPSHOTS ||\
+	aptly publish snapshot -component="$COMPONENTS" $SNAPSHOTS $DIST

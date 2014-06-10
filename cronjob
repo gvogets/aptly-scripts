@@ -1,0 +1,24 @@
+#!/bin/bash
+# Simple cronjob to update upstream mirrors daily and publish them.
+
+LOGFILE="$HOME/cronjob.log"
+
+set -x
+
+sendmailfail () {
+	FAIL=$1
+	if [ "$FAIL" != "0" ]; then
+		cat $LOGFILE | mail -s "aptly mirror cronjob on $(hostname -f) failed: $FAIL" $MAILTO
+	fi
+}
+
+trap "sendmailfail \$?" EXIT
+
+{
+	aptly mirror list --raw | xargs -n1 aptly mirror update
+	REPOS=$(aptly mirror list --raw | cut -d '#' -f1 | sort | uniq | xargs)
+	for REPO in $REPOS; do
+		aptly-publish-daily $REPO
+	done
+
+} | tee $LOGFILE

@@ -1,0 +1,26 @@
+#!/bin/bash
+# Creates separate mirrors for each component in a distribution.
+# Useful until aptly implements mirror-as-is.
+
+set -ex
+
+NAME="$1"
+URL="$2"
+DIST="$3"
+
+if [ -z "$DIST" ]; then
+	echo "Usage: $0 <name> <archive url> <distribution>"
+	exit 1
+fi
+
+if [[ "$DIST" =~ precise ]]; then
+   ARCHITECTURE="-architectures=i386"
+else
+   ARCHITECTURE="-architectures=i386,amd64"
+fi
+
+COMPONENTS=$(curl -s "$URL/dists/$DIST/Release" | grep "^Components: " | cut -d' ' -f2-)
+
+for COMPONENT in $COMPONENTS; do
+	aptly $ARCHITECTURE mirror create "$NAME#$COMPONENT" "$URL" "$DIST" "$COMPONENT"
+done
