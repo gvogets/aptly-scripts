@@ -7,16 +7,15 @@ set -e
 NAME="$1"
 URL="$2"
 DIST="$3"
+ARCH="$4"
 
 if [ -z "$DIST" ]; then
-	echo "Usage: $0 <name> <archive url> <distribution>"
+	echo "Usage: $0 <name> <archive url> <distribution> [<architecture,architecture>]"
 	exit 1
 fi
 
-if [[ "$DIST" =~ precise ]]; then
-   ARCHITECTURE="-architectures=i386"
-else
-   ARCHITECTURE="-architectures=i386,amd64"
+if [[ -n "$ARCH" ]]; then
+   ARCHITECTURE="-architectures=$ARCH"
 fi
 
 COMPONENTS=$(curl -s "$URL/dists/$DIST/Release" | grep "^Components: " | cut -d' ' -f2-)
