@@ -1,7 +1,7 @@
 #!/bin/bash
 # Publish a distribution with all components in a single snapshot (aptly >= 0.6).
 
-set -ex
+set -e
 
 DIST=$1
 DOTW=$2
@@ -13,6 +13,8 @@ fi
 if [ -z "$DOTW" ]; then
 	DOTW=$(date +%A | tr '[:upper:]' '[:lower:]')
 fi
+
+set -x
 
 aptly mirror list --raw | grep "$DIST#" |\
 	xargs -n1 -IX aptly snapshot drop $DOTW+X || true

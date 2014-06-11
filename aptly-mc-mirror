@@ -2,7 +2,7 @@
 # Creates separate mirrors for each component in a distribution.
 # Useful until aptly implements mirror-as-is.
 
-set -ex
+set -e
 
 NAME="$1"
 URL="$2"
@@ -22,5 +22,6 @@ fi
 COMPONENTS=$(curl -s "$URL/dists/$DIST/Release" | grep "^Components: " | cut -d' ' -f2-)
 
 for COMPONENT in $COMPONENTS; do
+	echo aptly $ARCHITECTURE mirror create "$NAME#$COMPONENT" "$URL" "$DIST" "$COMPONENT"
 	aptly $ARCHITECTURE mirror create "$NAME#$COMPONENT" "$URL" "$DIST" "$COMPONENT"
 done
