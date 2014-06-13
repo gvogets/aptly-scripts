@@ -4,9 +4,11 @@
 set -e
 
 DIST=$1
-DOTW=$2
-if [ -z "$DIST" ]; then
-	echo "Usage: $0 <distribution> [<day-of-the-week-name|tag>]"
+ARCH=$2
+DOTW=$3
+if [ -z "$ARCH" ]; then
+	echo "Usage:   $0 <distribution> <architecture,architecture> [<day-of-the-week-name|tag>]"
+    echo "Example: $0 trusty amd64,source wanderer-test"
 	exit 1
 fi
 
@@ -23,7 +25,8 @@ aptly mirror list --raw | grep "$DIST#" |\
 
 SNAPSHOTS=$(aptly snapshot list --raw | grep "$DOTW+$DIST#" | xargs)
 COMPONENTS_=$(aptly mirror list --raw | grep "$DIST#" | cut -d'#' -f2 | xargs)
-COMPONENTS=${COMPONENTS_// /,}
+COMPONENTS="-component=${COMPONENTS_// /,}"
+ARCHITECTURE="-architectures=$ARCH"
 
-aptly publish switch -component="$COMPONENTS" $DIST $DIST $SNAPSHOTS ||\
-	aptly publish snapshot -component="$COMPONENTS" $SNAPSHOTS $DIST
+aptly publish switch "$ARCHITECTURE" "$COMPONENTS" "$DIST" "$DIST" $SNAPSHOTS ||\
+	aptly publish snapshot "$ARCHITECTURE" "$COMPONENTS" $SNAPSHOTS "$DIST"
