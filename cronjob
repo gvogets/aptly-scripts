@@ -18,7 +18,7 @@ trap "sendmailfail \$?" EXIT
 	aptly mirror list --raw | xargs -n1 aptly mirror update
 	REPOS=$(aptly mirror list --raw | cut -d '#' -f1 | sort | uniq | xargs)
 	for REPO in $REPOS; do
-		aptly-publish-daily $REPO
+		aptly-publish-daily $REPO i386,amd64,source
 	done
 
 } | tee $LOGFILE
