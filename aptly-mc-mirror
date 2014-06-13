@@ -10,12 +10,17 @@ DIST="$3"
 ARCH="$4"
 
 if [ -z "$DIST" ]; then
-	echo "Usage: $0 <name> <archive url> <distribution> [<architecture,architecture>]"
+	echo "Usage:   $0 <name> <archive url> <distribution> [<architecture,architecture>]"
+    echo "Example: $0 trusty http://archive.ubuntu.com trusty amd64,source"
 	exit 1
 fi
 
 if [[ -n "$ARCH" ]]; then
-   ARCHITECTURE="-architectures=$ARCH"
+    if [[ "$ARCH" != ${ARCH/,source/} ]]; then
+        ARCHITECTURE="-architectures=${ARCH/,source/} -with-sources"
+    else
+        ARCHITECTURE="-architectures=$ARCH"
+    fi
 fi
 
 COMPONENTS=$(curl -s "$URL/dists/$DIST/Release" | grep "^Components: " | cut -d' ' -f2-)
