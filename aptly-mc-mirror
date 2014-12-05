@@ -23,7 +23,17 @@ if [[ -n "$ARCH" ]]; then
     fi
 fi
 
-COMPONENTS=$(curl -s "$URL/dists/$DIST/Release" | grep "^Components: " | cut -d' ' -f2-)
+if [ -n "$5" ]
+then
+    COMPONENTS="$5"
+else
+    COMPONENTS=$(curl -s "$URL/dists/$DIST/Release" | grep "^Components: " | cut -d' ' -f2-)
+fi
+
+if [ -z "$COMPONENTS" ]
+then
+    echo "Warning: COMPONENTS:<${COMPONENTS}> from ${DIST} from Archive ${URL} seem to be empty"
+fi
 
 for COMPONENT in $COMPONENTS; do
 	echo aptly $ARCHITECTURE mirror create "$NAME#$COMPONENT" "$URL" "$DIST" "$COMPONENT"
